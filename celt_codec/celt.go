@@ -23,6 +23,22 @@ int encode(CELTEncoder* st,char* src, size_t srclen, char* dst)
 	return len;
 }
 
+int encoder_init(CELTEncoder* _encoder, int _bitrate, int _variable, int _prediction, int _complexity) {
+	int code;
+    code = celt_encoder_ctl(_encoder, CELT_SET_VBR_RATE(_bitrate));
+	if (code !=CELT_OK) {
+		return code;
+    }
+	code = celt_encoder_ctl(_encoder, CELT_SET_PREDICTION(_prediction));
+	if (code !=CELT_OK) {
+			return code;
+	}
+	code = celt_encoder_ctl(_encoder, CELT_SET_COMPLEXITY(_complexity));
+	if (code !=CELT_OK) {
+			return code;
+	}
+	return CELT_OK;
+}
 #endif
 */
 import "C"
@@ -75,12 +91,7 @@ func (codec *CeltDecoder) Decode(celtFrameBuf []byte) []byte {
 	if C.CELT_OK != C.celt_decode(codec.Decoder, C.make_const_unsigned_char((*C.uchar)(unsafe.Pointer(&celtFrameBuf[0]))), C.int(buflen), (*C.celt_int16)(unsafe.Pointer(&p[0]))) {
 		return nil
 	}
-	// if C.CELT_OK != C.decode(codec.Decoder, (*C.char)(unsafe.Pointer(&celtFrameBuf[0])), C.long(buflen), (*C.char)(unsafe.Pointer(&p[0]))) {
-	// 	return nil
-	// }
-	sdtLenDecoder := int(codec.FrameBytes)
-	pcm := p[:sdtLenDecoder]
-	return pcm
+	return p[:int(codec.FrameBytes)]
 }
 
 // Init 重新初始化参数
@@ -105,11 +116,11 @@ func (codec *CeltDecoder) Init(channels, frameSize, sampleRate, bitsPerSample in
 
 // Destroy 销毁celt的mode和decoder
 func (codec *CeltDecoder) Destroy() {
-	if codec.Mode != nil {
-		C.celt_mode_destroy(codec.Mode)
-	}
 	if codec.Decoder != nil {
 		C.celt_decoder_destroy(codec.Decoder)
+	}
+	if codec.Mode != nil {
+		C.celt_mode_destroy(codec.Mode)
 	}
 }
 
@@ -122,6 +133,10 @@ type CeltEncoder struct {
 	SampleRate    C.int
 	BitsPerSample C.int
 	FrameBytes    C.int
+	Bitrate       C.int
+	Variable      C.int
+	Prediction    C.int
+	Complexity    C.int
 }
 
 // NewEncoder 初始化 CeltEncoder
@@ -132,6 +147,10 @@ func NewEncoder(channels, frameSize, sampleRate, bitsPerSample int) (*CeltEncode
 		SampleRate:    C.int(sampleRate),
 		BitsPerSample: C.int(bitsPerSample),
 		FrameBytes:    C.int(frameSize * channels * (bitsPerSample / 8)),
+		Bitrate:       C.int(128 * 1000),
+		Variable:      C.int(0),
+		Prediction:    C.int(0),
+		Complexity:    C.int(5),
 	}
 	err := (C.int)(0)
 	codec.Mode = C.celt_mode_create(codec.SampleRate, codec.FrameSize, &err)
@@ -140,6 +159,13 @@ func NewEncoder(channels, frameSize, sampleRate, bitsPerSample int) (*CeltEncode
 	}
 	codec.Encoder = C.celt_encoder_create(codec.Mode, codec.Channels, &err)
 	if err != 0 {
+		C.celt_mode_destroy(codec.Mode)
+		return nil, errors.New(fmt.Sprintf("faild to create celt decoder errorcode=%d", int(err)))
+	}
+	// 初始化 encoder参数
+	if C.CELT_OK != C.encoder_init(codec.Encoder, codec.Bitrate, codec.Variable, codec.Prediction, codec.Complexity) {
+		C.celt_encoder_destroy(codec.Encoder)
+		C.celt_mode_destroy(codec.Mode)
 		return nil, errors.New(fmt.Sprintf("faild to create celt decoder errorcode=%d", int(err)))
 	}
 	return codec, nil
@@ -152,15 +178,11 @@ func (codec *CeltEncoder) Encode(pcmFrameBuf []byte) []byte {
 		return nil
 	}
 	p := make([]byte, buflen)
-	dstlen := (C.int)(0)
-	dstlen = C.celt_encode(codec.Encoder, (*C.celt_int16)(unsafe.Pointer(&pcmFrameBuf[0])), nil, (*C.uchar)(unsafe.Pointer(&p[0])), C.int(buflen))
-	//dstlen = C.encode(codec.Encoder, (*C.char)(unsafe.Pointer(&pcmFrameBuf[0])), C.ulong(buflen), (*C.char)(unsafe.Pointer(&p[0])))
+	dstlen := C.celt_encode(codec.Encoder, (*C.celt_int16)(unsafe.Pointer(&pcmFrameBuf[0])), nil, (*C.uchar)(unsafe.Pointer(&p[0])), C.int(buflen))
 	if dstlen <= 0 {
 		return nil
 	}
-	celt := p[:int(dstlen)]
-	println("celtlen=", dstlen)
-	return celt
+	return p[:int(dstlen)]
 }
 
 // Init 重新初始化参数
@@ -185,10 +207,10 @@ func (codec *CeltEncoder) Init(channels, frameSize, sampleRate, bitsPerSample in
 
 // Destroy 销毁celt的mode和encoder
 func (codec *CeltEncoder) Destroy() {
-	if codec.Mode != nil {
-		C.celt_mode_destroy(codec.Mode)
-	}
 	if codec.Encoder != nil {
 		C.celt_encoder_destroy(codec.Encoder)
+	}
+	if codec.Mode != nil {
+		C.celt_mode_destroy(codec.Mode)
 	}
 }
