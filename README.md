@@ -3,7 +3,7 @@
 
 # supported for libcelt 0.7.1
 
-> 编译 libcelt： https://github.com/scjtqs2/libcelt
+> 编译 libcelt： https://github.com/scjtqs2/libcelt/tree/0.7.1
 > 
 # 使用说明参考 example
 
