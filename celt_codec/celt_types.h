@@ -1,6 +1,28 @@
+/* celt_types.h taken from libogg */
+/********************************************************************
+ *                                                                  *
+ * THIS FILE IS PART OF THE OggVorbis SOFTWARE CODEC SOURCE CODE.   *
+ * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
+ * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
+ * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
+ *                                                                  *
+ * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2002             *
+ * by the Xiph.Org Foundation http://www.xiph.org/                  *
+ *                                                                  *
+ ********************************************************************
+
+ function: #ifdef jail to whip a few platforms into the UNIX ideal.
+ last mod: $Id: os_types.h 7524 2004-08-11 04:20:36Z conrad $
+
+ ********************************************************************/
+/**
+   @file celt_types.h
+   @brief CELT types
+*/
 #ifndef _CELT_TYPES_H
 #define _CELT_TYPES_H
 
+/* Use the real stdint.h if it's there (taken from Paul Hsieh's pstdint.h) */
 #if (defined(__STDC__) && __STDC__ && __STDC_VERSION__ >= 199901L) || (defined(__GNUC__) && (defined(_STDINT_H) || defined(_STDINT_H_)) || defined (HAVE_STDINT_H))
 #include <stdint.h>
 
