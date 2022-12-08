@@ -8,21 +8,8 @@ package celt_codec
 #define ___SCJTQSCLASS_CELT_CODEC_2022_12_8__H_
 #include <stdlib.h>
 #include "celt.h"
-// EXPORT const unsigned char *make_const_unsigned_char(unsigned char *data);
-const unsigned char *make_const_unsigned_char(unsigned char *data) {
-	return (const unsigned char*)data;
-}
-int decode(CELTDecoder* st, char* src, long srclen, char* dst) {
-    return celt_decode(st, (const unsigned char*)src, srclen, (celt_int16 *)dst);
-}
 
-int encode(CELTEncoder* st,char* src, size_t srclen, char* dst)
-{
-    int len;
-    len = celt_encode(st, (celt_int16 *)src, NULL, (unsigned char*)dst, (long)srclen);
-	return len;
-}
-
+// encoder_init 初始化 encoder的部分参数。在cgo中CELT_SET_xxx 函数不能识别，因此写个C函数来处理
 int encoder_init(CELTEncoder* _encoder, int _bitrate, int _variable, int _prediction, int _complexity) {
 	int code;
     code = celt_encoder_ctl(_encoder, CELT_SET_VBR_RATE(_bitrate));
@@ -88,7 +75,7 @@ func (codec *CeltDecoder) Decode(celtFrameBuf []byte) []byte {
 		return nil
 	}
 	p := make([]byte, buflen*10+1)
-	if C.CELT_OK != C.celt_decode(codec.Decoder, C.make_const_unsigned_char((*C.uchar)(unsafe.Pointer(&celtFrameBuf[0]))), C.int(buflen), (*C.celt_int16)(unsafe.Pointer(&p[0]))) {
+	if C.CELT_OK != C.celt_decode(codec.Decoder, (*C.uchar)(unsafe.Pointer(&celtFrameBuf[0])), C.int(buflen), (*C.celt_int16)(unsafe.Pointer(&p[0]))) {
 		return nil
 	}
 	return p[:int(codec.FrameBytes)]

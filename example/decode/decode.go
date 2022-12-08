@@ -29,6 +29,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	defer dcodec.Destroy()
 	w, err := os.OpenFile("example/pcm/test2.pcm", os.O_CREATE|os.O_RDWR, os.ModePerm)
 	if err != nil {
 		panic(err)

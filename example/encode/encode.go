@@ -26,6 +26,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	defer codec.Destroy()
 	w, _ := os.OpenFile("example/pcm/test.celt", os.O_CREATE|os.O_RDWR, os.ModePerm)
 	defer w.Close()
 	for {
