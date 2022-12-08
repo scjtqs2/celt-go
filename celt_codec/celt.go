@@ -2,7 +2,7 @@ package celt_codec
 
 /*
 #cgo CFLAGS: -I/usr/local/include
-#cgo LDFLAGS: -L/usr/local/lib -lcelt0  -lm -ldl -lstdc++
+#cgo LDFLAGS: -L/usr/local/lib -lcelt0 -lstdc++
 
 #ifndef ___SCJTQSCLASS_CELT_CODEC_2022_12_8__H_
 #define ___SCJTQSCLASS_CELT_CODEC_2022_12_8__H_
