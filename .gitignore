@@ -13,3 +13,6 @@
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
+/example/pcm/test.celt
+/example/pcm/test2.pcm
+/example/pcm/test.mp3
