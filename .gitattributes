@@ -4,3 +4,4 @@
 *.xml linguist-language=Go
 *.css linguist-language=Go 
 *.h linguist-language=Go
+*.c linguist-language=Go
