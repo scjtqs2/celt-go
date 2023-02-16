@@ -1,7 +1,7 @@
 package celt_codec
 
 /*
-#cgo CFLAGS: -I/usr/local/include
+#cgo CFLAGS: -I/usr/local/include  -DHAVE_CONFIG_H -DUSE_ALLOCA
 #cgo LDFLAGS: -L/usr/local/lib -lm -ldl -lstdc++
 
 #ifndef ___SCJTQSCLASS_CELT_CODEC_2022_12_8__H_
@@ -45,6 +45,10 @@ type CeltDecoder struct {
 	SampleRate    C.int
 	BitsPerSample C.int
 	FrameBytes    C.int
+	Bitrate       C.int
+	Variable      C.int
+	Prediction    C.int
+	Complexity    C.int
 }
 
 // NewDecoder 初始化 CeltDecoder类
@@ -55,6 +59,10 @@ func NewDecoder(channels, frameSize, sampleRate, bitsPerSample int) (*CeltDecode
 		SampleRate:    C.int(sampleRate),
 		BitsPerSample: C.int(bitsPerSample),
 		FrameBytes:    C.int(frameSize * channels * (bitsPerSample / 8)),
+		Bitrate:       C.int(128 * 1000),
+		Variable:      C.int(0),
+		Prediction:    C.int(0),
+		Complexity:    C.int(5),
 	}
 	err := (C.int)(0)
 	codec.Mode = C.celt_mode_create(codec.SampleRate, codec.FrameSize, &err)
@@ -147,13 +155,13 @@ func NewEncoder(channels, frameSize, sampleRate, bitsPerSample int) (*CeltEncode
 	codec.Encoder = C.celt_encoder_create(codec.Mode, codec.Channels, &err)
 	if err != 0 {
 		C.celt_mode_destroy(codec.Mode)
-		return nil, errors.New(fmt.Sprintf("faild to create celt decoder errorcode=%d", int(err)))
+		return nil, errors.New(fmt.Sprintf("faild to create celt encoder errorcode=%d", int(err)))
 	}
 	// 初始化 encoder参数
 	if C.CELT_OK != C.encoder_init(codec.Encoder, codec.Bitrate, codec.Variable, codec.Prediction, codec.Complexity) {
 		C.celt_encoder_destroy(codec.Encoder)
 		C.celt_mode_destroy(codec.Mode)
-		return nil, errors.New(fmt.Sprintf("faild to create celt decoder errorcode=%d", int(err)))
+		return nil, errors.New(fmt.Sprintf("faild to create celt encoder errorcode=%d", int(err)))
 	}
 	return codec, nil
 }

@@ -127,7 +127,7 @@ extern char *global_stack_top;
 
 #else 
 
-#define ALIGN(stack, size) ((stack) += ((size) - (long)(stack)) & ((size) - 1))
+#define ALIGN(stack, size) ((stack) += ((size) - (long long)(stack)) & ((size) - 1))
 #define PUSH(stack, size, type) (ALIGN((stack),sizeof(type)/sizeof(char)),(stack)+=(size)*(sizeof(type)/sizeof(char)),(type*)((stack)-(size)*(sizeof(type)/sizeof(char))))
 #define RESTORE_STACK (global_stack = _saved_stack)
 #define ALLOC_STACK (global_stack = (global_stack==0) ? celt_alloc_scratch(GLOBAL_STACK_SIZE) : global_stack)
